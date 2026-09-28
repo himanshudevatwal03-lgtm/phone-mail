@@ -72,12 +72,12 @@ function AuthScreen({ onComplete, onToast }: { onComplete: (user: User) => void;
   const [awaitingCode, setAwaitingCode] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [authMode, setAuthMode] = useState<'otp' | 'password'>('otp');
+  const [authMode, setAuthMode] = useState<'otp' | 'password'>('otp'); const [otpSetupRequired, setOtpSetupRequired] = useState(false);
   const [language, setLanguage] = useState('English');
   const verifier = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    api<{ authMode: 'otp' | 'password' }>('/config').then(config => setAuthMode(config.authMode)).catch(() => undefined);
+    api<{ authMode: 'otp' | 'password'; otpSetupRequired?: boolean }>('/config').then(config => { setAuthMode(config.authMode); setOtpSetupRequired(Boolean(config.otpSetupRequired)); }).catch(() => undefined);
     const query = window.matchMedia('(max-width: 760px)');
     const change = (event: MediaQueryListEvent) => { setMobile(event.matches); setStep(event.matches ? 1 : 3); };
     query.addEventListener('change', change);
@@ -153,7 +153,7 @@ function AuthScreen({ onComplete, onToast }: { onComplete: (user: User) => void;
       <div className="eyebrow">{mobile ? `PHONE VERIFICATION · 0${step} / 04` : 'WELCOME TO PHONE MAIL'}</div>
       <h2>{awaitingCode ? <>Check your<br /><em>messages.</em></> : <>Your inbox starts<br /><em>with your number.</em></>}</h2>
       <p className="auth-desc">{awaitingCode ? `Enter the 6-digit code we sent to ${phone}.` : 'Sign in or get started using a phone number you can verify.'}</p>
-      {error && <div className="error-banner"><AlertCircle size={16} />{error}</div>}
+      {otpSetupRequired && <p style={{ margin: '-16px 0 18px', fontSize: 10, lineHeight: 1.5, color: '#9a6d32' }}>SMS OTP starts after Twilio Verify credentials are added in Render. Until then, sign-in uses a password.</p>}{error && <div className="error-banner"><AlertCircle size={16} />{error}</div>}  
       <form onSubmit={e => { e.preventDefault(); authMode === 'password' ? void continueWithPassword() : void continueWithOtp(); }}>
         <label className="field-label" htmlFor="auth-phone">PHONE NUMBER</label>
         <div className="input-with-icon"><Phone size={17} /><input id="auth-phone" autoComplete="tel" inputMode="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+1 415 555 0123" disabled={awaitingCode} required /></div>
