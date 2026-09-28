@@ -21,9 +21,9 @@ services:
       - key: EMAIL_DOMAIN
         value: phonemail.com
       - key: AUTH_MODE
-        value: password
+        value: otp
       - key: OTP_PROVIDER
-        value: local
+        value: twilio
       - key: APP_URL
         fromService:
           type: web
