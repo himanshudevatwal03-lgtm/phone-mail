@@ -226,7 +226,7 @@ function MailApp({ user, onUser, onSignOut, onToast, toast }: { user: User; onUs
     catch (err: any) { onToast(err.message); }
   };
 
-  useEffect(() => { void loadItems(); }, [folder, filter, search]);
+  useEffect(() => { const refresh = () => { if (document.visibilityState !== 'visible') return; api<Conversation[]>(`/conversations?folder=${encodeURIComponent(folder)}&filter=${encodeURIComponent(filter)}&search=${encodeURIComponent(search)}`).then(setItems).catch(() => undefined); if (selectedId) api<Conversation>(`/conversations/${selectedId}`).then(value => setConversation(current => current?.id === value.id ? value : current)).catch(() => undefined); }; const interval = window.setInterval(refresh, 4000); window.addEventListener('focus', refresh); document.addEventListener('visibilitychange', refresh); return () => { window.clearInterval(interval); window.removeEventListener('focus', refresh); document.removeEventListener('visibilitychange', refresh); }; }, [folder, filter, search, selectedId]);
   useEffect(() => {
     const installed = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true;
     if (installed) api('/profile/mobile-app', { method: 'POST' }).catch(() => undefined);
