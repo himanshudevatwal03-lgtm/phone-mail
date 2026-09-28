@@ -27,7 +27,7 @@ In the default development configuration, OTP is generated locally and shown in 
 
 ## Live OTP and Twilio trial setup
 
-For real OTP delivery, set `OTP_PROVIDER=twilio` in `.env` and configure `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and `TWILIO_VERIFY_SERVICE_SID`. Create a Verify service in Twilio Console. Restart with `docker compose up -d --build` after changing configuration.
+For real OTP delivery, set `AUTH_MODE=otp` and `OTP_PROVIDER=twilio`, then configure `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and `TWILIO_VERIFY_SERVICE_SID`. Create a Verify service in Twilio Console. Restart with `docker compose up -d --build` after changing configuration. On Render, add those three values under the web service's Environment settings; the Blueprint selects OTP/Twilio mode and automatically keeps password sign-in available until all three Twilio Verify values are present. As soon as they are added, the app switches to SMS OTP after its restart. Never commit these secrets or send them in chat.
 
 Twilio trial accounts restrict the destination numbers that can receive verification/messages and apply trial message templates/limits. Verify each test destination in the Twilio console before testing. Trial availability and limits can change; see the [Twilio Verify trial guide](https://www.twilio.com/docs/usage/trials/try-out-verify) and [trial account guide](https://www.twilio.com/docs/usage/tutorials/how-to-use-your-free-trial-account). No Twilio secret belongs in Git or chat.
 
