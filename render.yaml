@@ -1,0 +1,41 @@
+services:
+  - type: web
+    name: phonemail-himanshu
+    runtime: docker
+    plan: free
+    region: singapore
+    branch: main
+    autoDeployTrigger: commit
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "10000"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: phonemail-db-himanshu
+          property: connectionString
+      - key: EMAIL_DOMAIN
+        value: phonemail.com
+      - key: AUTH_MODE
+        value: password
+      - key: OTP_PROVIDER
+        value: local
+      - key: APP_URL
+        fromService:
+          type: web
+          name: phonemail-himanshu
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: INBOUND_WEBHOOK_SECRET
+        generateValue: true
+
+databases:
+  - name: phonemail-db-himanshu
+    databaseName: phonemail
+    user: phonemail
+    plan: free
+    region: singapore
+    postgresMajorVersion: "17"
