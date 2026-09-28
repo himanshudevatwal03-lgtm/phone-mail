@@ -1,0 +1,12 @@
+{
+  "name": "PhoneMail",
+  "short_name": "PhoneMail",
+  "description": "Your phone number is your email identity.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f7f2",
+  "theme_color": "#0c302c",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
