@@ -17,7 +17,7 @@ const emailDomain = (process.env.EMAIL_DOMAIN || 'phonemail.com').toLowerCase();
 const twilioConfigured = Boolean(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN);
 const twilioClient = twilioConfigured ? twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN) : null;
 const twilioToken = process.env.TWILIO_AUTH_TOKEN || '';
-const attempts = new Map();
+const attempts = new Map(); function currentAuthMode() { return process.env.AUTH_MODE === 'password' ? 'password' : otpProvider === 'twilio' ? (twilioClient && process.env.TWILIO_VERIFY_SERVICE_SID ? 'otp' : 'password') : production && otpProvider === 'local' ? 'password' : 'otp'; }
 
 app.set('trust proxy', 1);
 app.use(express.json({ limit: '6mb' }));
@@ -130,12 +130,12 @@ function twimlResponse(res, voice) {
 }
 
 app.get('/api/config', (_req, res) => {
-  res.json({ authMode: process.env.AUTH_MODE || 'otp', localOtp: otpProvider === 'local' && !production, emailDomain });
+  res.json({ authMode: currentAuthMode(), otpSetupRequired: process.env.AUTH_MODE !== 'password' && otpProvider === 'twilio' && currentAuthMode() !== 'otp', localOtp: otpProvider === 'local' && !production, emailDomain });
 });
 
 app.get('/api/health', async (_req, res) => {
   await db.query('SELECT 1');
-  res.json({ status: 'ok', database: 'postgres', authMode: process.env.AUTH_MODE || 'otp', otpProvider });
+  res.json({ status: 'ok', database: 'postgres', authMode: currentAuthMode(), otpProvider });
 });
 
 app.post('/api/auth/otp/request', async (req, res, next) => {
@@ -176,7 +176,7 @@ app.post('/api/auth/otp/verify', async (req, res, next) => {
 
 app.post('/api/auth/password/register', async (req, res, next) => {
   try {
-    if ((process.env.AUTH_MODE || 'otp') !== 'password') return res.status(404).json({ error: 'Password fallback is disabled.' });
+    if (currentAuthMode() !== 'password') return res.status(404).json({ error: 'Password fallback is disabled.' });
     const phone = db.normalizePhone(req.body.phone);
     const password = String(req.body.password || '');
     if (password.length < 8) return res.status(400).json({ error: 'Use a password with at least 8 characters.' });
@@ -188,7 +188,7 @@ app.post('/api/auth/password/register', async (req, res, next) => {
 
 app.post('/api/auth/password/login', async (req, res, next) => {
   try {
-    if ((process.env.AUTH_MODE || 'otp') !== 'password') return res.status(404).json({ error: 'Password fallback is disabled.' });
+    if (currentAuthMode() !== 'password') return res.status(404).json({ error: 'Password fallback is disabled.' });
     const phone = db.normalizePhone(req.body.phone);
     const { rows } = await db.query('SELECT * FROM users WHERE phone_e164=$1', [phone]);
     const user = rows[0];
@@ -199,7 +199,7 @@ app.post('/api/auth/password/login', async (req, res, next) => {
 
 app.post('/api/auth/password/continue', async (req, res, next) => {
   try {
-    if ((process.env.AUTH_MODE || 'otp') !== 'password') return res.status(404).json({ error: 'Password fallback is disabled.' });
+    if (currentAuthMode() !== 'password') return res.status(404).json({ error: 'Password fallback is disabled.' });
     const phone = db.normalizePhone(req.body.phone);
     const password = String(req.body.password || '');
     if (password.length < 8) return res.status(400).json({ error: 'Use a password with at least 8 characters.' });
